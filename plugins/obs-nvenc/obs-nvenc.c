@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2014 by Sean Nelson <audiohacked@gmail.com>
+    Copyright (C) 2015 by Sean Nelson <audiohacked@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 	struct obs_nvenc *obsnv = bzalloc(sizeof(struct obs_nvenc));
 	obsnv->encoder = encoder;
 
-	//obs_nvenc_helper_create_instance()
+	obs_nvenc_helper_create_instance(obsnv);
 	obs_nvenc_helper_open_session(obsnv);
 	
 	return obsnv;
