@@ -42,7 +42,7 @@ struct obs_nvenc {
 	obs_encoder_t          *encoder;
 
 	// x264_param_t           params;
-	NVENCPI                *context;
+	// NVENCAPI                *context;
 
 	DARRAY(uint8_t)        packet_data;
 
@@ -64,6 +64,8 @@ static const char *obs_nvenc_getname(void)
 
 static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 {
+	struct obs_nvenc *obsnv = bzalloc(sizeof(struct obs_nvenc));
+	obsnv->encoder = encoder;
 	/*
 	Open Encode Session with NvEncOpenEncodeSession
 		Give License key: 
@@ -93,6 +95,27 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 	Create Resources to hold I/O Data
 	
 	*/
+	return obsnv;
+}
+
+static void obs_nvenc_destroy(void *data)
+{
+	struct obs_nvenc *obsnv = data;
+
+	if (obsnv) {
+		os_end_high_performance(obsnv->performance_token);
+		//clear_data(obsnv);
+		da_free(obsnv->packet_data);
+		bfree(obsnv);
+	}
+}
+
+static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
+		struct encoder_packet *packet, bool *received_packet)
+{
+	struct obs_nvenc *obsnv = data;
+
+	return false;
 }
 
 struct obs_encoder_info obs_nvenc_encoder = {

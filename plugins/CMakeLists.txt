@@ -21,3 +21,5 @@ add_subdirectory(obs-ffmpeg)
 add_subdirectory(obs-outputs)
 add_subdirectory(rtmp-services)
 add_subdirectory(text-freetype2)
+
+add_subdirectory(obs-nvenc)

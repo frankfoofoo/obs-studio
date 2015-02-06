@@ -1,10 +1,10 @@
-#ifdef _WIN32 || _WIN64
-	#include <windows.h>
-#else
-	#include <dlfcn.h>
-#endif
-
 #include <obs-module.h>
+
+#if defined (_WIN32) || defined(_WIN64)
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-nvenc", "en-US")
@@ -16,13 +16,14 @@ bool obs_module_load(void)
 	void *obs_nvenc_lib = NULL;
     void *nvEncodeAPICreateInstance;
 
-#if defined (NV_WINDOWS)
-	#if defined (_WIN64)
-		obs_nvenc_lib = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
-	#else
-		obs_nvenc_lib = LoadLibrary(TEXT("nvEncodeAPI.dll"));
-	#endif
-#else
+#if defined (_WIN32)
+	obs_nvenc_lib = LoadLibrary(TEXT("nvEncodeAPI.dll"));
+#endif
+
+#if defined (_WIN64)
+	obs_nvenc_lib = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
+#endif
+#if defined (LINUX)
 	obs_nvenc_lib = dlopen("libnvidia-encode.so.1", RTLD_LAZY);
 #endif
 
@@ -30,10 +31,10 @@ bool obs_module_load(void)
 		return false;
 	}
 
-#if defined(NV_WINDOWS)
-    nvEncodeAPICreateInstance = (void*)GetProcAddress(m_hinstLib, "NvEncodeAPICreateInstance");
+#if defined(_WIN32)
+	nvEncodeAPICreateInstance = (void*)GetProcAddress(obs_nvenc_lib, "NvEncodeAPICreateInstance");
 #else
-    nvEncodeAPICreateInstance = (void*)dlsym(m_hinstLib, "NvEncodeAPICreateInstance");
+	nvEncodeAPICreateInstance = (void*)dlsym(obs_nvenc_lib, "NvEncodeAPICreateInstance");
 #endif
 
 	obs_register_encoder(&obs_nvenc_encoder);
