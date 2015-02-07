@@ -42,7 +42,12 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 
 	obs_nvenc_helper_create_instance(obsnv);
 	obs_nvenc_helper_open_session(obsnv);
-	
+	obs_nvenc_helper_select_codec(obsnv);
+	obs_nvenc_helper_get_preset(obsnv);
+	//obs_nvenc_helper_set_profile(obsnv);
+	obs_nvenc_helper_init_encoder(obsnv);
+	obs_nvenc_helper_create_buffer(obsnv);
+
 	return obsnv;
 }
 
@@ -52,7 +57,7 @@ static void obs_nvenc_destroy(void *data)
 
 	if (obsnv) {
 		os_end_high_performance(obsnv->performance_token);
-		//clear_data(obsnv);
+		clear_data(obsnv);
 		da_free(obsnv->packet_data);
 		bfree(obsnv);
 	}

@@ -37,7 +37,24 @@ struct obs_nvenc {
 	NV_ENCODE_API_FUNCTION_LIST*         api;
 	void                                 *nvenc_encoder;
 	NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS session_params;
-	NV_ENC_CONFIG                        nvenc_encode_config;
+
+	GUID                                 nvenc_codec;
+
+	NV_ENC_PRESET_CONFIG                 *nvenc_config_preset;
+
+	GUID                                 *nvenc_preset_array;
+	GUID                                 nvenc_preset;
+
+	GUID                                 *nvenc_profile_array;
+	GUID                                 nvenc_profile;
+
+	NV_ENC_BUFFER_FORMAT                 *nvenc_config_input_format;
+	NV_ENC_CONFIG                        *nvenc_config_encode;
+	NV_ENC_INITIALIZE_PARAMS             *nvenc_config_init;
+	NV_ENC_CONFIG_H264                   *nvenc_config_h264;
+
+	NV_ENC_CREATE_INPUT_BUFFER           *nvenc_buffer_input;
+	NV_ENC_CREATE_BITSTREAM_BUFFER       *nvenc_buffer_output;
 
 	DARRAY(uint8_t)                      packet_data;
 
@@ -51,7 +68,7 @@ struct obs_nvenc {
 };
 
 /* ------------------------------------------------------------------------- */
-extern void data_clear(struct obs_nvenc *obsnv);
+extern void clear_data(struct obs_nvenc *obsnv);
 /* ------------------------------------------------------------------------- */
 //Create API Instance from library
 extern NVENCSTATUS obs_nvenc_helper_create_instance(void *data);
@@ -90,3 +107,4 @@ extern NVENCSTATUS obs_nvenc_helper_get_input_formats(void *data);
 extern NVENCSTATUS obs_nvenc_helper_init_encoder(void *data);
 
 //Create Resources to hold I/O Data
+extern NVENCSTATUS obs_nvenc_helper_create_buffer(void *data);
