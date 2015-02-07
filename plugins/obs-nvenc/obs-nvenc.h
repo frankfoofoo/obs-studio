@@ -27,6 +27,8 @@
 #define info(format, ...)  do_log(LOG_INFO,    format, ##__VA_ARGS__)
 #define debug(format, ...) do_log(LOG_DEBUG,   format, ##__VA_ARGS__)
 
+#define SET_VER(configStruct, type) {configStruct.version = type##_VER;}
+
 extern void *obs_nvenc_lib;
 
 /* ------------------------------------------------------------------------- */
@@ -35,26 +37,27 @@ struct obs_nvenc {
 	obs_encoder_t                        *encoder;
 
 	NV_ENCODE_API_FUNCTION_LIST*         api;
-	void                                 *nvenc_encoder;
-	NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS session_params;
+	void                                 *nvenc_device;
+	//NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS session_params;
 
 	GUID                                 nvenc_codec;
-
-	NV_ENC_PRESET_CONFIG                 *nvenc_config_preset;
-
-	GUID                                 *nvenc_preset_array;
 	GUID                                 nvenc_preset;
 
-	GUID                                 *nvenc_profile_array;
-	GUID                                 nvenc_profile;
+	NV_ENC_CREATE_INPUT_BUFFER           nvenc_buffer_input;
+	NV_ENC_CREATE_BITSTREAM_BUFFER       nvenc_buffer_output;
+	NV_ENC_PIC_PARAMS                    nvenc_picture;
+	
+	//NV_ENC_PRESET_CONFIG                 *nvenc_config_preset;
 
-	NV_ENC_BUFFER_FORMAT                 *nvenc_config_input_format;
-	NV_ENC_CONFIG                        *nvenc_config_encode;
-	NV_ENC_INITIALIZE_PARAMS             *nvenc_config_init;
-	NV_ENC_CONFIG_H264                   *nvenc_config_h264;
+	//GUID                                 *nvenc_preset_array;
 
-	NV_ENC_CREATE_INPUT_BUFFER           *nvenc_buffer_input;
-	NV_ENC_CREATE_BITSTREAM_BUFFER       *nvenc_buffer_output;
+	//GUID                                 *nvenc_profile_array;
+	//GUID                                 nvenc_profile;
+
+	//NV_ENC_CONFIG                        *nvenc_config_encode;
+	//NV_ENC_INITIALIZE_PARAMS             *nvenc_config_init;
+	//NV_ENC_CONFIG_H264                   *nvenc_config_h264;
+
 
 	DARRAY(uint8_t)                      packet_data;
 
@@ -68,7 +71,10 @@ struct obs_nvenc {
 };
 
 /* ------------------------------------------------------------------------- */
+
 extern void clear_data(struct obs_nvenc *obsnv);
+extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv);
+
 /* ------------------------------------------------------------------------- */
 //Create API Instance from library
 extern NVENCSTATUS obs_nvenc_helper_create_instance(void *data);

@@ -24,19 +24,21 @@
 #include "obs-nvenc.h"
 #include "nvEncodeAPI.h"
 
-#define SET_VER(configStruct, type) {configStruct.version = type##_VER;}
-
 /* ------------------------------------------------------------------------- */
+
 void clear_data(struct obs_nvenc *obsnv)
 {
-	if (obsnv->nvenc_encoder) {
-		obsnv->api->nvEncDestroyEncoder(obsnv->nvenc_encoder);
-		bfree(obsnv->nvenc_encoder);
+	if (obsnv->nvenc_device) {
+		obsnv->api->nvEncDestroyInputBuffer(obsnv->nvenc_device, &obsnv->nvenc_buffer_input);
+		obsnv->api->nvEncDestroyBitstreamBuffer(obsnv->nvenc_device, &obsnv->nvenc_buffer_output);
+		obsnv->api->nvEncDestroyEncoder(obsnv->nvenc_device);
+
+		bfree(obsnv->nvenc_device);
 		bfree(obsnv->sei);
 		bfree(obsnv->extra_data);
 		bfree(obsnv->api);
 
-		obsnv->nvenc_encoder    = NULL;
+		obsnv->nvenc_device    = NULL;
 		obsnv->sei              = NULL;
 		obsnv->extra_data       = NULL;
 		obsnv->api              = NULL;
@@ -44,6 +46,7 @@ void clear_data(struct obs_nvenc *obsnv)
 }
 
 /* ------------------------------------------------------------------------- */
+
 NVENCSTATUS obs_nvenc_helper_create_instance(void *data)
 {
 	struct obs_nvenc *obsnv = data;
@@ -72,23 +75,23 @@ NVENCSTATUS obs_nvenc_helper_open_session(void* data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
+	NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS session_params;
 
 	// set up session parameter data structure
-	memset(&obsnv->session_params, 0, sizeof(obsnv->session_params));
-	obsnv->session_params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
+	memset(&session_params, 0, sizeof(session_params));
+	session_params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
 
 	// fill parameters with data
-	obsnv->session_params.device = gs_get_context();
+	session_params.device = gs_get_context();
 	if (gs_get_device_type() == GS_DEVICE_DIRECT3D_11)
-		obsnv->session_params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
+		session_params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
 	else
-		obsnv->session_params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
-	obsnv->session_params.reserved = NULL;
-	obsnv->session_params.apiVersion = NVENCAPI_VERSION;
+		session_params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+	session_params.reserved = NULL;
+	session_params.apiVersion = NVENCAPI_VERSION;
 	
 	// Open Session Encoder
-	obsnv->api->nvEncOpenEncodeSessionEx(&obsnv->session_params,
-		&obsnv->nvenc_encoder);
+	obsnv->api->nvEncOpenEncodeSessionEx(&session_params, &obsnv->nvenc_device);
 
 	return nvStatus;
 }
@@ -109,7 +112,7 @@ NVENCSTATUS obs_nvenc_helper_select_codec(void *data)
 	uint32_t codec_count = 0, preset_count = 0;
 	obsnv->nvenc_codec = obs_nvenc_helper_get_guid_codec();
 
-	//obsnv->api->nvEncGetEncodeGUIDCount(obsnv->nvenc_encoder, &codec_count);
+	//obsnv->api->nvEncGetEncodeGUIDCount(obsnv->nvenc_device, &codec_count);
 	return nvStatus;
 }
 
@@ -117,11 +120,17 @@ NVENCSTATUS obs_nvenc_helper_get_preset(void *data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
-
+	uint32_t preset_count = 0;
+//	GUID *nvenc_preset_array;
+//	GUID *nvenc_config_preset;
 	obsnv->nvenc_preset = obs_nvenc_helper_get_guid_preset();
-	//obsnv->api->nvEncGetEncodePresetCount(obsnv->nvenc_encoder, obsnv->nvenc_codec, &preset_count);
-	//obsnv->api->nvEncGetEncodePresetGUIDs(obsnv->nvenc_encoder, obsnv->nvenc_codec, obsnv->nvenc_preset_array, preset_count, &preset_count);
-	nvStatus = obsnv->api->nvEncGetEncodePresetConfig(obsnv->nvenc_encoder, obsnv->nvenc_codec, obsnv->nvenc_preset, obsnv->nvenc_config_preset);
+
+//	obsnv->api->nvEncGetEncodePresetCount(obsnv->nvenc_device, obsnv->nvenc_codec, &preset_count);
+//	memset(nvenc_preset_array, 0, preset_count*sizeof(GUID));
+
+//	obsnv->api->nvEncGetEncodePresetGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_preset_array, preset_count, &preset_count);
+
+//	nvStatus = obsnv->api->nvEncGetEncodePresetConfig(obsnv->nvenc_device, obsnv->nvenc_codec, obsnv->nvenc_preset, nvenc_config_preset);
 
 	return nvStatus;
 }
@@ -131,9 +140,11 @@ NVENCSTATUS obs_nvenc_helper_set_profile(void *data)
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
 	uint32_t profile_count = 0;
+	GUID *nvenc_profile_array;
 
-	obsnv->api->nvEncGetEncodeProfileGUIDCount(obsnv->nvenc_encoder, obsnv->nvenc_codec, &profile_count);
-	obsnv->api->nvEncGetEncodeProfileGUIDs(obsnv->nvenc_encoder, obsnv->nvenc_codec, obsnv->nvenc_profile_array, profile_count, &profile_count);
+	obsnv->api->nvEncGetEncodeProfileGUIDCount(obsnv->nvenc_device, obsnv->nvenc_codec, &profile_count);
+	memset(&nvenc_profile_array, 0, profile_count*sizeof(GUID));
+	obsnv->api->nvEncGetEncodeProfileGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_profile_array, profile_count, &profile_count);
 
 	return nvStatus;
 }
@@ -143,9 +154,11 @@ NVENCSTATUS obs_nvenc_helper_get_input_formats(void *data)
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
 	uint32_t input_format_count = 0;
+	NV_ENC_BUFFER_FORMAT *nvenc_config_input_format;
 
-	obsnv->api->nvEncGetInputFormatCount(obsnv->nvenc_encoder, obsnv->nvenc_codec, &input_format_count);
-	obsnv->api->nvEncGetInputFormats(obsnv->nvenc_encoder, obsnv->nvenc_codec, obsnv->nvenc_config_input_format, input_format_count, &input_format_count);
+	obsnv->api->nvEncGetInputFormatCount(obsnv->nvenc_device, obsnv->nvenc_codec, &input_format_count);
+	memset(&nvenc_config_input_format, 0, input_format_count*sizeof(NV_ENC_BUFFER_FORMAT));
+	obsnv->api->nvEncGetInputFormats(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_config_input_format, input_format_count, &input_format_count);
 
 	return nvStatus;
 }
@@ -154,17 +167,18 @@ NVENCSTATUS obs_nvenc_helper_init_encoder(void *data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
-
+	NV_ENC_INITIALIZE_PARAMS nvenc_config_init;
 	//obsnv->nvenc_config_encode->profileGUID = obsnv->nvenc_profile;
-	obsnv->nvenc_config_init->encodeGUID = obs_nvenc_helper_get_guid_codec();
-	obsnv->nvenc_config_init->encodeWidth = (int)obs_encoder_get_width(obsnv->encoder);
-	obsnv->nvenc_config_init->encodeHeight = (int)obs_encoder_get_height(obsnv->encoder);
+	memset(&nvenc_config_init, 0, sizeof(NV_ENC_INITIALIZE_PARAMS));
+	SET_VER(nvenc_config_init, NV_ENC_INITIALIZE_PARAMS);
+	nvenc_config_init.encodeGUID = obs_nvenc_helper_get_guid_codec();
+	nvenc_config_init.encodeWidth = (int)obs_encoder_get_width(obsnv->encoder);
+	nvenc_config_init.encodeHeight = (int)obs_encoder_get_height(obsnv->encoder);
 	//obsnv->nvenc_config_init->reportSliceOffsets = 
 	//obsnv->nvenc_config_init->enableEncodeAsync = 
 	//obsnv->nvenc_config_init->encodeConfig = obsnv->nvenc_config_encode;
 	//obsnv->nvenc_config_init->encodeConfig->encodeCodecConfig = (NV_ENC_CODEC_CONFIG)obsnv->nvenc_config_h264;
-	obsnv->api->nvEncInitializeEncoder(obsnv->encoder, obsnv->nvenc_config_init);
-
+	obsnv->api->nvEncInitializeEncoder(obsnv->encoder, &nvenc_config_init);
 	return nvStatus;
 }
 
@@ -173,8 +187,30 @@ NVENCSTATUS obs_nvenc_helper_create_buffer(void *data)
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
 
-	obsnv->api->nvEncCreateInputBuffer(obsnv->nvenc_encoder, obsnv->nvenc_buffer_input);
-	obsnv->api->nvEncCreateBitstreamBuffer(obsnv->nvenc_encoder, obsnv->nvenc_buffer_output);
+	// initialize input buffer
+	memset(&obsnv->nvenc_buffer_input, 0, sizeof(NV_ENC_CREATE_INPUT_BUFFER));
+	SET_VER(obsnv->nvenc_buffer_input, NV_ENC_CREATE_INPUT_BUFFER);
+	obsnv->nvenc_buffer_input.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL; // FIX ME
+	obsnv->api->nvEncCreateInputBuffer(obsnv->nvenc_device, &obsnv->nvenc_buffer_input);
+	
+	// initialize output bitstream buffer
+	memset(&obsnv->nvenc_buffer_output, 0, sizeof(NV_ENC_CREATE_BITSTREAM_BUFFER));
+	SET_VER(obsnv->nvenc_buffer_output, NV_ENC_CREATE_BITSTREAM_BUFFER);
+	obsnv->api->nvEncCreateBitstreamBuffer(obsnv->nvenc_device, &obsnv->nvenc_buffer_output);
 
 	return nvStatus;
+}
+
+void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv)
+{
+	obsnv->nvenc_picture.inputWidth = (int)obs_encoder_get_width(obsnv->encoder);
+	obsnv->nvenc_picture.inputHeight = (int)obs_encoder_get_height(obsnv->encoder);
+	obsnv->nvenc_picture.inputPitch = obsnv->nvenc_picture.inputWidth;
+	//obsnv->nvenc_picture.encodePicFlags = ;
+	//obsnv->nvenc_picture.frameIdx = ;
+	//obsnv->nvenc_picture.inputTimeStamp = ;
+	//obsnv->nvenc_picture.inputDuration = ;
+	//obsnv->nvenc_picture.inputBuffer = ;
+	obsnv->nvenc_picture.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL;
+
 }

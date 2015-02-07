@@ -44,7 +44,6 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 	obs_nvenc_helper_open_session(obsnv);
 	obs_nvenc_helper_select_codec(obsnv);
 	obs_nvenc_helper_get_preset(obsnv);
-	//obs_nvenc_helper_set_profile(obsnv);
 	obs_nvenc_helper_init_encoder(obsnv);
 	obs_nvenc_helper_create_buffer(obsnv);
 
@@ -54,6 +53,10 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 static void obs_nvenc_destroy(void *data)
 {
 	struct obs_nvenc *obsnv = data;
+
+	memset(&obsnv->nvenc_picture, 0, sizeof(obsnv->nvenc_picture));
+	obsnv->nvenc_picture.encodePicFlags = NV_ENC_PIC_FLAG_EOS;
+	obsnv->api->nvEncEncodePicture(obsnv->nvenc_device, &obsnv->nvenc_picture);
 
 	if (obsnv) {
 		os_end_high_performance(obsnv->performance_token);
@@ -67,6 +70,43 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 		struct encoder_packet *packet, bool *received_packet)
 {
 	struct obs_nvenc *obsnv = data;
+
+	// initialize input buffer lock data structure
+	NV_ENC_LOCK_INPUT_BUFFER input_buffer_lock;
+	memset(&input_buffer_lock, 0, sizeof(NV_ENC_LOCK_INPUT_BUFFER));
+	SET_VER(input_buffer_lock, NV_ENC_LOCK_INPUT_BUFFER);
+
+	//initialize output bitstream buffer lock data structure
+	NV_ENC_LOCK_BITSTREAM output_buffer_lock;
+	memset(&output_buffer_lock, 0, sizeof(NV_ENC_LOCK_BITSTREAM));
+	SET_VER(output_buffer_lock, NV_ENC_LOCK_BITSTREAM);
+
+	//lock input buffer
+	input_buffer_lock.inputBuffer = &obsnv->nvenc_buffer_input;
+	obsnv->api->nvEncLockInputBuffer(obsnv->nvenc_device, &input_buffer_lock);
+
+	//fill data
+	obs_nvenc_helper_fill_frame(obsnv);
+
+	//unlock input buffer
+	obsnv->api->nvEncUnlockInputBuffer(obsnv->nvenc_device, obsnv->nvenc_buffer_input.inputBuffer);
+
+	// maybe set Per-Frame Encode parameters
+	// start here
+
+	// submit buffer for encoding
+	obsnv->nvenc_picture.inputBuffer = &obsnv->nvenc_buffer_input;
+	obsnv->api->nvEncEncodePicture(obsnv->nvenc_device, &obsnv->nvenc_picture);
+
+	//lock output bitstream buffer
+	output_buffer_lock.bitstreamBufferPtr = &obsnv->nvenc_buffer_output;
+	obsnv->api->nvEncLockBitstream(obsnv->nvenc_device, &output_buffer_lock);
+
+	//grab data
+	//obs_nvenc_helper_save_bitstream();
+
+	//unlock output bitstream buffer
+	obsnv->api->nvEncUnlockBitstream(obsnv->nvenc_device, obsnv->nvenc_buffer_output.bitstreamBuffer);
 
 	return false;
 }
