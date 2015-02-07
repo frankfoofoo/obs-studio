@@ -1,5 +1,5 @@
 #include <obs-module.h>
-#include <util\platform.h>
+#include <util/platform.h>
 
 #if defined (_WIN32) || defined(_WIN64)
 #include <windows.h>
