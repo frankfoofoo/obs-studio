@@ -119,10 +119,10 @@ struct obs_encoder_info obs_nvenc_encoder = {
 	.create         = obs_nvenc_create,
 	.destroy        = obs_nvenc_destroy,
 	.encode         = obs_nvenc_encode,
-	.update         = NULL,
-	.get_properties = NULL,
-	.get_defaults   = NULL,
-	.get_extra_data = NULL,
-	.get_sei_data   = NULL,
-	.get_video_info = NULL
+	.update         = obs_nvenc_update,
+	.get_properties = obs_nvenc_get_properties,
+	.get_defaults   = obs_nvenc_get_defaults,
+	.get_extra_data = obs_nvenc_get_extra_data,
+	.get_sei_data   = obs_nvenc_get_sei_data,
+	.get_video_info = obs_nvenc_get_video_info
 };

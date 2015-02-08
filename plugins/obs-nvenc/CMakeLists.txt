@@ -7,6 +7,7 @@ set(obs-nvenc_HEADERS
 set(obs-nvenc_SOURCES
 	obs-nvenc.c
 	obs-nvenc-helper.c
+	obs-nvenc-optional.c
 	obs-nvenc-plugin-main.c)
 
 add_library(obs-nvenc MODULE

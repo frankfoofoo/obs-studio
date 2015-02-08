@@ -114,3 +114,14 @@ extern NVENCSTATUS obs_nvenc_helper_init_encoder(void *data);
 
 //Create Resources to hold I/O Data
 extern NVENCSTATUS obs_nvenc_helper_create_buffer(void *data);
+
+/* ------------------------------------------------------------------------- */
+
+extern void obs_nvenc_get_defaults(obs_data_t *settings);
+extern obs_properties_t *obs_nvenc_get_properties(void *unused);
+extern bool obs_nvenc_update(void *data, obs_data_t *settings);
+extern bool obs_nvenc_get_extra_data(void *data, uint8_t **extra_data, size_t *size);
+extern bool obs_nvenc_get_sei_data(void *data, uint8_t **sei, size_t *size);
+extern bool obs_nvenc_get_video_info(void *data, struct video_scale_info *info);
+
+/* ------------------------------------------------------------------------- */
