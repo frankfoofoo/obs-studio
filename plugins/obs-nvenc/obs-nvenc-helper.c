@@ -201,16 +201,38 @@ NVENCSTATUS obs_nvenc_helper_create_buffer(void *data)
 	return nvStatus;
 }
 
-void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv)
+void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv, struct encoder_frame *frame)
 {
+	video_t *video = obs_encoder_video(obsnv->encoder);
+	const struct video_output_info *vid_info = video_output_get_info(video);
+
 	obsnv->nvenc_picture.inputWidth = (int)obs_encoder_get_width(obsnv->encoder);
 	obsnv->nvenc_picture.inputHeight = (int)obs_encoder_get_height(obsnv->encoder);
 	obsnv->nvenc_picture.inputPitch = obsnv->nvenc_picture.inputWidth;
 	//obsnv->nvenc_picture.encodePicFlags = ;
 	//obsnv->nvenc_picture.frameIdx = ;
-	//obsnv->nvenc_picture.inputTimeStamp = ;
+	obsnv->nvenc_picture.inputTimeStamp = frame->pts;
 	//obsnv->nvenc_picture.inputDuration = ;
-	//obsnv->nvenc_picture.inputBuffer = ;
-	obsnv->nvenc_picture.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL;
+	obsnv->nvenc_picture.inputBuffer = frame->data[0];
 
+	if (vid_info->format == VIDEO_FORMAT_I420) {
+		obsnv->nvenc_picture.bufferFmt = NV_ENC_BUFFER_FORMAT_IYUV_PL;
+	}
+	else if (vid_info->format == VIDEO_FORMAT_NV12) {
+		obsnv->nvenc_picture.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12_PL;
+	}
+	else {
+		obsnv->nvenc_picture.bufferFmt = NV_ENC_BUFFER_FORMAT_UNDEFINED;
+	}
+
+}
+
+void obs_nvenc_helper_save_bitstream(struct obs_nvenc *obsnv, struct encoder_packet *packet)
+{
+	packet->data = obsnv->nvenc_buffer_output.bitstreamBuffer;
+	packet->size = obsnv->nvenc_buffer_output.size;
+	packet->type = OBS_ENCODER_VIDEO;
+	//packet->pts = obsnv->nvenc_buffer_output.bitstreamBuffer
+	//packet->dts = obsnv->nvenc_buffer_output
+	//packet->keyframe = obsnv->nvenc_buffer_output
 }

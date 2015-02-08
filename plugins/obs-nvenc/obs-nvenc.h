@@ -73,7 +73,8 @@ struct obs_nvenc {
 /* ------------------------------------------------------------------------- */
 
 extern void clear_data(struct obs_nvenc *obsnv);
-extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv);
+extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv, struct encoder_frame *frame);
+extern void obs_nvenc_helper_save_bitstream(struct obs_nvenc *obsnv, struct encoder_packet *packet);
 
 /* ------------------------------------------------------------------------- */
 //Create API Instance from library

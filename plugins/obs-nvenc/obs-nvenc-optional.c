@@ -88,7 +88,7 @@ bool obs_nvenc_get_sei_data(void *data, uint8_t **sei, size_t *size)
 		return false;
 	}
 
-	*sei = obsnv->sei;
+	*sei  = obsnv->sei;
 	*size = obsnv->sei_size;
 	return true;
 }

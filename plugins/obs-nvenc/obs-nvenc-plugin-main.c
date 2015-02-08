@@ -24,7 +24,7 @@ bool obs_module_load(void)
 
 	if (obs_nvenc_lib == NULL) {
 		blog(LOG_ERROR, "[obs-nvenc] ERROR: nVidia Encoder DLL missing!");
-		//return true;
+		return true;
 	}
 
 	obs_register_encoder(&obs_nvenc_encoder);

@@ -70,6 +70,10 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 		struct encoder_packet *packet, bool *received_packet)
 {
 	struct obs_nvenc *obsnv = data;
+	NVENCSTATUS nvStatus = NV_ENC_ERR_GENERIC;
+
+	if (!frame || !packet || !received_packet)
+		return false;
 
 	// initialize input buffer lock data structure
 	NV_ENC_LOCK_INPUT_BUFFER input_buffer_lock;
@@ -86,7 +90,7 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 	obsnv->api->nvEncLockInputBuffer(obsnv->nvenc_device, &input_buffer_lock);
 
 	//fill data
-	obs_nvenc_helper_fill_frame(obsnv);
+	obs_nvenc_helper_fill_frame(obsnv, frame);
 
 	//unlock input buffer
 	obsnv->api->nvEncUnlockInputBuffer(obsnv->nvenc_device, obsnv->nvenc_buffer_input.inputBuffer);
@@ -96,14 +100,18 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 
 	// submit buffer for encoding
 	obsnv->nvenc_picture.inputBuffer = &obsnv->nvenc_buffer_input;
-	obsnv->api->nvEncEncodePicture(obsnv->nvenc_device, &obsnv->nvenc_picture);
+	nvStatus = obsnv->api->nvEncEncodePicture(obsnv->nvenc_device, &obsnv->nvenc_picture);
+	if (nvStatus != NV_ENC_SUCCESS) {
+		warn("encode failed");
+		return false;
+	}
 
 	//lock output bitstream buffer
 	output_buffer_lock.bitstreamBufferPtr = &obsnv->nvenc_buffer_output;
 	obsnv->api->nvEncLockBitstream(obsnv->nvenc_device, &output_buffer_lock);
 
 	//grab data
-	//obs_nvenc_helper_save_bitstream();
+	obs_nvenc_helper_save_bitstream(obsnv, packet);
 
 	//unlock output bitstream buffer
 	obsnv->api->nvEncUnlockBitstream(obsnv->nvenc_device, obsnv->nvenc_buffer_output.bitstreamBuffer);
