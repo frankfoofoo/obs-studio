@@ -1,12 +1,6 @@
 #include <obs-module.h>
 #include <util/platform.h>
 
-#if defined (_WIN32) || defined(_WIN64)
-#include <windows.h>
-#else
-#include <dlfcn.h>
-#endif
-
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-nvenc", "en-US")
 
