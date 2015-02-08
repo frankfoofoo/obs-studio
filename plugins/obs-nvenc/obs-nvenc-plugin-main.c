@@ -11,19 +11,20 @@ bool obs_module_load(void)
 {
 
 #if defined (_WIN64)
-	obs_nvenc_lib = os_dlopen("nvEncodeAPI64.dll");
+#define NVIDIA_LIB "nvEncodeAPI64.dll"
 #endif
 
-#if defined (_WIN32)
-	obs_nvenc_lib = os_dlopen("nvEncodeAPI.dll");
+#if defined (_WIN32) && !defined(_WIN64)
+#define NVIDIA_LIB "nvEncodeAPI.dll"
 #endif
 
 #if defined (LINUX)
-	obs_nvenc_lib = os_dlopen("libnvidia-encode.so");
+#define NVIDIA_LIB "libnvidia-encode.so"
 #endif
 
+	obs_nvenc_lib = os_dlopen(NVIDIA_LIB);
 	if (obs_nvenc_lib == NULL) {
-		blog(LOG_ERROR, "[obs-nvenc] ERROR: nVidia Encoder DLL missing!");
+		blog(LOG_ERROR, "[obs-nvenc] ERROR: nVidia Encoder DLL missing! Looking for %s", NVIDIA_LIB);
 		return true;
 	}
 
