@@ -127,13 +127,14 @@ GUID obs_nvenc_helper_get_guid_preset(OBS_NVENC_PRESET preset)
 		return NV_ENC_PRESET_BD_GUID; break;
 	case OBS_NVENC_PRESET_LOW_LATENCY:
 		return NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
+		return NV_ENC_PRESET_LOW_LATENCY_HQ_GUID; break;
 	case OBS_NVENC_PRESET_LOW_LATENCY_HP:
 		return NV_ENC_PRESET_LOW_LATENCY_HP_GUID; break;
 	case OBS_NVENC_PRESET_LOSSLESS:
 		return NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID; break;
 	case OBS_NVENC_PRESET_LOSSLESS_HP:
 		return NV_ENC_PRESET_LOSSLESS_HP_GUID; break;
-	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
 	default:
 		return NV_ENC_PRESET_LOW_LATENCY_HQ_GUID; break;
 	}
@@ -214,14 +215,14 @@ const char* obs_nvenc_preset_string(OBS_NVENC_PRESET preset)
 		return "Blu-Ray"; break;
 	case OBS_NVENC_PRESET_LOW_LATENCY:
 		return "Low Latency"; break;
-	case OBS_NVENC_PRESET_LOW_LATENCY_HP:
+	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
 		return "Low Latency High Quality"; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HP:
+		return "Low Latency High Performance"; break;
 	case OBS_NVENC_PRESET_LOSSLESS:
 		return "Lossless"; break;
 	case OBS_NVENC_PRESET_LOSSLESS_HP:
 		return "Lossless High Performance"; break;
-	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
-		return "Low Latency High Performance"; break;
 	default:
 		return "Unknown Encoder Preset"; break;
 	}

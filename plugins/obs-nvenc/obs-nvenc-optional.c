@@ -57,7 +57,7 @@ obs_properties_t *obs_nvenc_get_properties(void *unused)
 	}
 
 	list = obs_properties_add_list(props, "preset", TEXT_PRESET, OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
-	for (count = 1; count <= OBS_NVENC_PRESET_LOW_LATENCY_HQ; count++) {
+	for (count = 1; count <= OBS_NVENC_PRESET_LOSSLESS_HP; count++) {
 		string = obs_nvenc_preset_string(count);
 		blog(LOG_INFO, "[nvenc encoder] adding nvenc preset string: %s", string);
 		obs_property_list_add_int(list, string, count);
