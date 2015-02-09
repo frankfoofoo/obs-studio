@@ -24,10 +24,6 @@
 #include "obs-nvenc.h"
 #include "nvEncodeAPI.h"
 
-#ifndef _STDINT_H_INCLUDED
-#define _STDINT_H_INCLUDED
-#endif
-
 /* ------------------------------------------------------------------------- */
 
 static const char *obs_nvenc_getname(void)
@@ -39,6 +35,7 @@ static void *obs_nvenc_create(obs_data_t *settings, obs_encoder_t *encoder)
 {
 	struct obs_nvenc *obsnv = bzalloc(sizeof(struct obs_nvenc));
 	obsnv->encoder = encoder;
+	obsnv->settings = settings;
 
 	obs_nvenc_helper_create_instance(obsnv);
 	obs_nvenc_helper_open_session(obsnv);
@@ -93,14 +90,15 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 	obs_nvenc_helper_fill_frame(obsnv, frame);
 
 	//unlock input buffer
-	obsnv->api->nvEncUnlockInputBuffer(obsnv->nvenc_device, obsnv->nvenc_buffer_input.inputBuffer);
+	obsnv->api->nvEncUnlockInputBuffer(obsnv->nvenc_device,
+			obsnv->nvenc_buffer_input.inputBuffer);
 
 	// maybe set Per-Frame Encode parameters
-	// start here
 
 	// submit buffer for encoding
 	obsnv->nvenc_picture.inputBuffer = &obsnv->nvenc_buffer_input;
-	nvStatus = obsnv->api->nvEncEncodePicture(obsnv->nvenc_device, &obsnv->nvenc_picture);
+	nvStatus = obsnv->api->nvEncEncodePicture(obsnv->nvenc_device,
+			&obsnv->nvenc_picture);
 	if (nvStatus != NV_ENC_SUCCESS) {
 		warn("encode failed");
 		return false;
@@ -114,7 +112,8 @@ static bool obs_nvenc_encode(void *data, struct encoder_frame *frame,
 	obs_nvenc_helper_save_bitstream(obsnv, packet);
 
 	//unlock output bitstream buffer
-	obsnv->api->nvEncUnlockBitstream(obsnv->nvenc_device, obsnv->nvenc_buffer_output.bitstreamBuffer);
+	obsnv->api->nvEncUnlockBitstream(obsnv->nvenc_device,
+			obsnv->nvenc_buffer_output.bitstreamBuffer);
 
 	return false;
 }

@@ -58,35 +58,37 @@ typedef enum _OBS_NVENC_PRESET {
 /* ------------------------------------------------------------------------- */
 
 struct obs_nvenc {
-	obs_encoder_t                        *encoder;
+	obs_encoder_t                  *encoder;
+	obs_data_t                     *settings;
+	NV_ENCODE_API_FUNCTION_LIST*   api;
+	void                           *nvenc_device;
 
-	NV_ENCODE_API_FUNCTION_LIST*         api;
-	void                                 *nvenc_device;
+	GUID                           nvenc_codec;
+	GUID                           nvenc_preset;
+	GUID                           nvenc_profile;
 
-	GUID                                 nvenc_codec;
-	GUID                                 nvenc_preset;
-	GUID                                 nvenc_profile;
-
-	NV_ENC_CREATE_INPUT_BUFFER           nvenc_buffer_input;
-	NV_ENC_CREATE_BITSTREAM_BUFFER       nvenc_buffer_output;
-	NV_ENC_PIC_PARAMS                    nvenc_picture;
+	NV_ENC_CREATE_INPUT_BUFFER     nvenc_buffer_input;
+	NV_ENC_CREATE_BITSTREAM_BUFFER nvenc_buffer_output;
+	NV_ENC_PIC_PARAMS              nvenc_picture;
 	
-	DARRAY(uint8_t)                      packet_data;
+	DARRAY(uint8_t)                packet_data;
 
-	uint8_t                              *extra_data;
-	uint8_t                              *sei;
+	uint8_t                        *extra_data;
+	uint8_t                        *sei;
 
-	size_t                               extra_data_size;
-	size_t                               sei_size;
+	size_t                         extra_data_size;
+	size_t                         sei_size;
 
-	os_performance_token_t               *performance_token;
+	os_performance_token_t         *performance_token;
 };
 
 /* ------------------------------------------------------------------------- */
 
 extern void clear_data(struct obs_nvenc *obsnv);
-extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv, struct encoder_frame *frame);
-extern void obs_nvenc_helper_save_bitstream(struct obs_nvenc *obsnv, struct encoder_packet *packet);
+extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv,
+		struct encoder_frame *frame);
+extern void obs_nvenc_helper_save_bitstream(struct obs_nvenc *obsnv,
+		struct encoder_packet *packet);
 extern const char* obs_nvenc_profile_string(OBS_NVENC_PROFILE profile);
 extern const char* obs_nvenc_preset_string(OBS_NVENC_PRESET preset);
 
