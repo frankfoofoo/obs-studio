@@ -42,9 +42,9 @@ void obs_nvenc_get_defaults(obs_data_t *settings)
 			OBS_NVENC_PROFILE_H264_MAIN);
 }
 
-obs_properties_t *obs_nvenc_get_properties(void *unused)
+obs_properties_t *obs_nvenc_get_properties(void *data)
 {
-	UNUSED_PARAMETER(unused);
+	struct obs_nvenc *obsnv = data;
 	int count = 0;
 	obs_properties_t *props = obs_properties_create();
 	obs_property_t *list;
