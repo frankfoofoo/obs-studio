@@ -38,10 +38,10 @@ void clear_data(struct obs_nvenc *obsnv)
 		bfree(obsnv->extra_data);
 		bfree(obsnv->api);
 
-		obsnv->nvenc_device    = NULL;
-		obsnv->sei              = NULL;
-		obsnv->extra_data       = NULL;
-		obsnv->api              = NULL;
+		obsnv->nvenc_device = NULL;
+		obsnv->sei          = NULL;
+		obsnv->extra_data   = NULL;
+		obsnv->api          = NULL;
 	}
 }
 
@@ -83,10 +83,12 @@ NVENCSTATUS obs_nvenc_helper_open_session(void* data)
 
 	// fill parameters with data
 	session_params.device = gs_get_context();
-	if (gs_get_device_type() == GS_DEVICE_DIRECT3D_11)
+	if (gs_get_device_type() == GS_DEVICE_DIRECT3D_11) {
 		session_params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
-	else
+	}
+	else {
 		session_params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+	}
 	session_params.reserved = NULL;
 	session_params.apiVersion = NVENCAPI_VERSION;
 	
@@ -97,22 +99,147 @@ NVENCSTATUS obs_nvenc_helper_open_session(void* data)
 }
 GUID obs_nvenc_helper_get_guid_codec(void)
 {
+	//NvEncodeAPI 5.0 Codecs:
+	//    NV_ENC_CODEC_HEVC_GUID
 	return NV_ENC_CODEC_H264_GUID;
 }
 
-GUID obs_nvenc_helper_get_guid_preset(void)
+GUID obs_nvenc_helper_get_guid_preset(OBS_NVENC_PRESET preset)
 {
-	return NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
+	//NvEncodeAPI 5.0 Presets:
+	//    NV_ENC_PRESET_DEFAULT_GUID
+	//    NV_ENC_PRESET_HP_GUID
+	//    NV_ENC_PRESET_HQ_GUID
+	//    NV_ENC_PRESET_BD_GUID
+	//    NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID
+	//    NV_ENC_PRESET_LOW_LATENCY_HQ_GUID
+	//    NV_ENC_PRESET_LOW_LATENCY_HP_GUID
+	//    NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID
+	//    NV_ENC_PRESET_LOSSLESS_HP_GUID
+	switch (preset) {
+	case OBS_NVENC_PRESET_DEFAULT:
+		return NV_ENC_PRESET_DEFAULT_GUID; break;
+	case OBS_NVENC_PRESET_HP:
+		return NV_ENC_PRESET_HP_GUID; break;
+	case OBS_NVENC_PRESET_HQ:
+		return NV_ENC_PRESET_HQ_GUID; break;
+	case OBS_NVENC_PRESET_BD:
+		return NV_ENC_PRESET_BD_GUID; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY:
+		return NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HP:
+		return NV_ENC_PRESET_LOW_LATENCY_HP_GUID; break;
+	case OBS_NVENC_PRESET_LOSSLESS:
+		return NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID; break;
+	case OBS_NVENC_PRESET_LOSSLESS_HP:
+		return NV_ENC_PRESET_LOSSLESS_HP_GUID; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
+	default:
+		return NV_ENC_PRESET_LOW_LATENCY_HQ_GUID; break;
+	}
+}
+
+GUID obs_nvenc_helper_get_guid_profile(OBS_NVENC_PROFILE profile)
+{
+	//NvEncodeAPI 5.0 Profiles:
+	//    NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID
+	//    NV_ENC_H264_PROFILE_BASELINE_GUID
+	//    NV_ENC_H264_PROFILE_MAIN_GUID
+	//    NV_ENC_H264_PROFILE_HIGH_GUID
+	//    NV_ENC_H264_PROFILE_HIGH_444_GUID
+	//    NV_ENC_H264_PROFILE_STEREO_GUID
+	//    NV_ENC_H264_PROFILE_SVC_TEMPORAL_SCALABILTY
+	//    NV_ENC_H264_PROFILE_CONSTRAINED_HIGH_GUID
+	//    NV_ENC_HEVC_PROFILE_MAIN_GUID
+	switch (profile) {
+	case OBS_NVENC_PROFILE_AUTOSELECT:
+		return NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID; break;
+	case OBS_NVENC_PROFILE_H264_BASELINE:
+		return NV_ENC_H264_PROFILE_BASELINE_GUID; break;
+	case OBS_NVENC_PROFILE_H264_MAIN:
+		return NV_ENC_H264_PROFILE_MAIN_GUID; break;
+	case OBS_NVENC_PROFILE_H264_HIGH:
+		return NV_ENC_H264_PROFILE_HIGH_GUID; break;
+	case OBS_NVENC_PROFILE_H264_HIGH_444:
+		return NV_ENC_H264_PROFILE_HIGH_444_GUID; break;
+	case OBS_NVENC_PROFILE_H264_STEREO:
+		return NV_ENC_H264_PROFILE_STEREO_GUID; break;
+	case OBS_NVENC_PROFILE_H264_SVC_TEMPORAL_SCALABILTY:
+		return NV_ENC_H264_PROFILE_SVC_TEMPORAL_SCALABILTY; break;
+	case OBS_NVENC_PROFILE_H264_CONSTRAINED_HIGH:
+		return NV_ENC_H264_PROFILE_CONSTRAINED_HIGH_GUID; break;
+	case OBS_NVENC_PROFILE_H265_MAIN:
+		return NV_ENC_HEVC_PROFILE_MAIN_GUID; break;
+	default:
+		return NV_ENC_H264_PROFILE_MAIN_GUID; break;
+	}
+}
+
+const char* obs_nvenc_profile_string(OBS_NVENC_PROFILE profile)
+{
+	switch (profile) {
+	case OBS_NVENC_PROFILE_AUTOSELECT:
+		return "Auto Select Profile based on Codec"; break;
+	case OBS_NVENC_PROFILE_H264_BASELINE:
+		return "H.264 Baseline"; break;
+	case OBS_NVENC_PROFILE_H264_MAIN:
+		return "H.264 Main Profile"; break;
+	case OBS_NVENC_PROFILE_H264_HIGH:
+		return "H.264 High Profile"; break;
+	case OBS_NVENC_PROFILE_H264_HIGH_444:
+		return "H.264 High Profile (444)"; break;
+	case OBS_NVENC_PROFILE_H264_STEREO:
+		return "H.264 Stereo"; break;
+	case OBS_NVENC_PROFILE_H264_SVC_TEMPORAL_SCALABILTY:
+		return "H.264 SVC Temporal Scalabilty"; break;
+	case OBS_NVENC_PROFILE_H264_CONSTRAINED_HIGH:
+		return "H.264 High Profile Constrained"; break;
+	case OBS_NVENC_PROFILE_H265_MAIN:
+		return "H.265 Main Profile"; break;
+	default:
+		return "Unknown Encoder Profile"; break;
+	}
+}
+
+const char* obs_nvenc_preset_string(OBS_NVENC_PRESET preset)
+{
+	switch (preset) {
+	case OBS_NVENC_PRESET_DEFAULT:
+		return "Default"; break;
+	case OBS_NVENC_PRESET_HP:
+		return "High Performance"; break;
+	case OBS_NVENC_PRESET_HQ:
+		return "High Quality"; break;
+	case OBS_NVENC_PRESET_BD:
+		return "Blu-Ray"; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY:
+		return "Low Latency"; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HP:
+		return "Low Latency High Quality"; break;
+	case OBS_NVENC_PRESET_LOSSLESS:
+		return "Lossless"; break;
+	case OBS_NVENC_PRESET_LOSSLESS_HP:
+		return "Lossless High Performance"; break;
+	case OBS_NVENC_PRESET_LOW_LATENCY_HQ:
+		return "Low Latency High Performance"; break;
+	default:
+		return "Unknown Encoder Preset"; break;
+	}
 }
 
 NVENCSTATUS obs_nvenc_helper_select_codec(void *data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
-	uint32_t codec_count = 0, preset_count = 0;
-	obsnv->nvenc_codec = obs_nvenc_helper_get_guid_codec();
+	//uint32_t codec_count = 0;
+	//GUID *codec_array;
 
 	//obsnv->api->nvEncGetEncodeGUIDCount(obsnv->nvenc_device, &codec_count);
+	//memset(&codec_array, 0, codec_count*sizeof(GUID));
+	//obsnv->api->nvEncGetEncodeGUIDs(obsnv->nvenc_device, codec_array, codec_count, &codec_count);
+
+	obsnv->nvenc_codec = obs_nvenc_helper_get_guid_codec();
+
 	return nvStatus;
 }
 
@@ -120,17 +247,17 @@ NVENCSTATUS obs_nvenc_helper_get_preset(void *data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
-	uint32_t preset_count = 0;
-//	GUID *nvenc_preset_array;
-//	GUID *nvenc_config_preset;
-	obsnv->nvenc_preset = obs_nvenc_helper_get_guid_preset();
+	//uint32_t preset_count = 0;
+	//GUID *nvenc_preset_array;
+	//NV_ENC_PRESET_CONFIG nvenc_config_preset;
 
-//	obsnv->api->nvEncGetEncodePresetCount(obsnv->nvenc_device, obsnv->nvenc_codec, &preset_count);
-//	memset(nvenc_preset_array, 0, preset_count*sizeof(GUID));
+	//obsnv->api->nvEncGetEncodePresetCount(obsnv->nvenc_device, obsnv->nvenc_codec, &preset_count);
+	//memset(&nvenc_preset_array, 0, preset_count*sizeof(GUID));
+	//obsnv->api->nvEncGetEncodePresetGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_preset_array, preset_count, &preset_count);
 
-//	obsnv->api->nvEncGetEncodePresetGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_preset_array, preset_count, &preset_count);
+	obsnv->nvenc_preset = obs_nvenc_helper_get_guid_preset(0);
 
-//	nvStatus = obsnv->api->nvEncGetEncodePresetConfig(obsnv->nvenc_device, obsnv->nvenc_codec, obsnv->nvenc_preset, nvenc_config_preset);
+	//nvStatus = obsnv->api->nvEncGetEncodePresetConfig(obsnv->nvenc_device, obsnv->nvenc_codec, obsnv->nvenc_preset, &nvenc_config_preset);
 
 	return nvStatus;
 }
@@ -139,12 +266,14 @@ NVENCSTATUS obs_nvenc_helper_set_profile(void *data)
 {
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
-	uint32_t profile_count = 0;
-	GUID *nvenc_profile_array;
+	//uint32_t profile_count = 0;
+	//GUID *nvenc_profile_array;
 
-	obsnv->api->nvEncGetEncodeProfileGUIDCount(obsnv->nvenc_device, obsnv->nvenc_codec, &profile_count);
-	memset(&nvenc_profile_array, 0, profile_count*sizeof(GUID));
-	obsnv->api->nvEncGetEncodeProfileGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_profile_array, profile_count, &profile_count);
+	//obsnv->api->nvEncGetEncodeProfileGUIDCount(obsnv->nvenc_device, obsnv->nvenc_codec, &profile_count);
+	//memset(&nvenc_profile_array, 0, profile_count*sizeof(GUID));
+	//obsnv->api->nvEncGetEncodeProfileGUIDs(obsnv->nvenc_device, obsnv->nvenc_codec, nvenc_profile_array, profile_count, &profile_count);
+
+	obsnv->nvenc_profile = obs_nvenc_helper_get_guid_profile(0);
 
 	return nvStatus;
 }
@@ -168,17 +297,20 @@ NVENCSTATUS obs_nvenc_helper_init_encoder(void *data)
 	struct obs_nvenc *obsnv = data;
 	NVENCSTATUS nvStatus = NV_ENC_SUCCESS;
 	NV_ENC_INITIALIZE_PARAMS nvenc_config_init;
+
 	//obsnv->nvenc_config_encode->profileGUID = obsnv->nvenc_profile;
 	memset(&nvenc_config_init, 0, sizeof(NV_ENC_INITIALIZE_PARAMS));
 	SET_VER(nvenc_config_init, NV_ENC_INITIALIZE_PARAMS);
+
 	nvenc_config_init.encodeGUID = obs_nvenc_helper_get_guid_codec();
 	nvenc_config_init.encodeWidth = (int)obs_encoder_get_width(obsnv->encoder);
 	nvenc_config_init.encodeHeight = (int)obs_encoder_get_height(obsnv->encoder);
-	//obsnv->nvenc_config_init->reportSliceOffsets = 
-	//obsnv->nvenc_config_init->enableEncodeAsync = 
-	//obsnv->nvenc_config_init->encodeConfig = obsnv->nvenc_config_encode;
-	//obsnv->nvenc_config_init->encodeConfig->encodeCodecConfig = (NV_ENC_CODEC_CONFIG)obsnv->nvenc_config_h264;
-	obsnv->api->nvEncInitializeEncoder(obsnv->encoder, &nvenc_config_init);
+	//nvenc_config_init.reportSliceOffsets = 
+	//nvenc_config_init.enableEncodeAsync = 
+	//nvenc_config_init.encodeConfig = obsnv->nvenc_config_encode;
+	//nvenc_config_init.encodeConfig->encodeCodecConfig = (NV_ENC_CODEC_CONFIG)obsnv->nvenc_config_h264;
+
+	nvStatus = obsnv->api->nvEncInitializeEncoder(obsnv->encoder, &nvenc_config_init);
 	return nvStatus;
 }
 

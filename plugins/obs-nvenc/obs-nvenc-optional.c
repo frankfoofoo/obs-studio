@@ -24,29 +24,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "obs-nvenc.h"
 #include "nvEncodeAPI.h"
 
+#define TEXT_PRESET obs_module_text("Preset")
+#define TEXT_PROFILE obs_module_text("Profile")
+
 void obs_nvenc_get_defaults(obs_data_t *settings)
 {
-	obs_data_set_default_int   (settings, "bitrate",     3500);
-	obs_data_set_default_bool  (settings, "use_bufsize", false);
-	obs_data_set_default_int   (settings, "buffer_size", 3500);
-	obs_data_set_default_int   (settings, "keyint_sec",  0);
-	obs_data_set_default_int   (settings, "crf",         23);
-	obs_data_set_default_bool  (settings, "cbr",         true);
+	//obs_data_set_default_int   (settings, "bitrate",     3500);
+	//obs_data_set_default_bool  (settings, "use_bufsize", false);
+	//obs_data_set_default_int   (settings, "buffer_size", 3500);
+	//obs_data_set_default_int   (settings, "keyint_sec",  0);
+	//obs_data_set_default_int   (settings, "crf",         23);
+	//obs_data_set_default_bool  (settings, "cbr",         true);
 
-	obs_data_set_default_string(settings, "preset",      "veryfast");
-	obs_data_set_default_string(settings, "profile",     "");
-	obs_data_set_default_string(settings, "tune",        "");
+	obs_data_set_default_int(settings, "preset",      OBS_NVENC_PRESET_LOW_LATENCY_HQ);
+	obs_data_set_default_int(settings, "profile",     OBS_NVENC_PROFILE_H264_MAIN);
+	//obs_data_set_default_string(settings, "tune",        "");
 }
 
 obs_properties_t *obs_nvenc_get_properties(void *unused)
 {
 	UNUSED_PARAMETER(unused);
-
+	int count = 0;
 	obs_properties_t *props = obs_properties_create();
-//	obs_property_t *list;
-//	obs_property_t *p;
+	obs_property_t *list;
+	const char *string;
 
-	//obs_properties_add_int(props, "bitrate", obs_module_text("Bitrate"));
+	list = obs_properties_add_list(props, "profile", TEXT_PROFILE, OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
+	for (count = 1; count <= OBS_NVENC_PROFILE_H265_MAIN; count++) {
+		string = obs_nvenc_profile_string(count);
+		blog(LOG_INFO, "[nvenc encoder] adding nvenc profile string: %s", string);
+		obs_property_list_add_int(list, string, count);
+	}
+
+	list = obs_properties_add_list(props, "preset", TEXT_PRESET, OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
+	for (count = 1; count <= OBS_NVENC_PRESET_LOW_LATENCY_HQ; count++) {
+		string = obs_nvenc_preset_string(count);
+		blog(LOG_INFO, "[nvenc encoder] adding nvenc preset string: %s", string);
+		obs_property_list_add_int(list, string, count);
+	}
+
 	return props;
 }
 

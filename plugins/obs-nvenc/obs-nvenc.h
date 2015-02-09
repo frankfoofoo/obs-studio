@@ -31,6 +31,30 @@
 
 extern void *obs_nvenc_lib;
 
+typedef enum _OBS_NVENC_PROFILE {
+	OBS_NVENC_PROFILE_AUTOSELECT                   = 1, //NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID
+	OBS_NVENC_PROFILE_H264_BASELINE                = 2, //NV_ENC_H264_PROFILE_BASELINE_GUID
+	OBS_NVENC_PROFILE_H264_MAIN                    = 3, //NV_ENC_H264_PROFILE_MAIN_GUID
+	OBS_NVENC_PROFILE_H264_HIGH                    = 4, //NV_ENC_H264_PROFILE_HIGH_GUID
+	OBS_NVENC_PROFILE_H264_HIGH_444                = 5, //NV_ENC_H264_PROFILE_HIGH_444_GUID
+	OBS_NVENC_PROFILE_H264_STEREO                  = 6, //NV_ENC_H264_PROFILE_STEREO_GUID
+	OBS_NVENC_PROFILE_H264_SVC_TEMPORAL_SCALABILTY = 7, //NV_ENC_H264_PROFILE_SVC_TEMPORAL_SCALABILTY
+	OBS_NVENC_PROFILE_H264_CONSTRAINED_HIGH        = 8, //NV_ENC_H264_PROFILE_CONSTRAINED_HIGH_GUID
+	OBS_NVENC_PROFILE_H265_MAIN                    = 9, //NV_ENC_HEVC_PROFILE_MAIN_GUID
+} OBS_NVENC_PROFILE;
+
+typedef enum _OBS_NVENC_PRESET {
+	OBS_NVENC_PRESET_DEFAULT        = 1, //NV_ENC_PRESET_DEFAULT_GUID
+	OBS_NVENC_PRESET_HP             = 2, //NV_ENC_PRESET_HP_GUID
+	OBS_NVENC_PRESET_HQ             = 3, //NV_ENC_PRESET_HQ_GUID
+	OBS_NVENC_PRESET_BD             = 4, //NV_ENC_PRESET_BD_GUID
+	OBS_NVENC_PRESET_LOW_LATENCY    = 5, //NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID
+	OBS_NVENC_PRESET_LOW_LATENCY_HQ = 6, //NV_ENC_PRESET_LOW_LATENCY_HQ_GUID
+	OBS_NVENC_PRESET_LOW_LATENCY_HP = 7, //NV_ENC_PRESET_LOW_LATENCY_HP_GUID
+	OBS_NVENC_PRESET_LOSSLESS       = 8, //NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID
+	OBS_NVENC_PRESET_LOSSLESS_HP    = 9, //NV_ENC_PRESET_LOSSLESS_HP_GUID
+} OBS_NVENC_PRESET;
+
 /* ------------------------------------------------------------------------- */
 
 struct obs_nvenc {
@@ -38,27 +62,15 @@ struct obs_nvenc {
 
 	NV_ENCODE_API_FUNCTION_LIST*         api;
 	void                                 *nvenc_device;
-	//NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS session_params;
 
 	GUID                                 nvenc_codec;
 	GUID                                 nvenc_preset;
+	GUID                                 nvenc_profile;
 
 	NV_ENC_CREATE_INPUT_BUFFER           nvenc_buffer_input;
 	NV_ENC_CREATE_BITSTREAM_BUFFER       nvenc_buffer_output;
 	NV_ENC_PIC_PARAMS                    nvenc_picture;
 	
-	//NV_ENC_PRESET_CONFIG                 *nvenc_config_preset;
-
-	//GUID                                 *nvenc_preset_array;
-
-	//GUID                                 *nvenc_profile_array;
-	//GUID                                 nvenc_profile;
-
-	//NV_ENC_CONFIG                        *nvenc_config_encode;
-	//NV_ENC_INITIALIZE_PARAMS             *nvenc_config_init;
-	//NV_ENC_CONFIG_H264                   *nvenc_config_h264;
-
-
 	DARRAY(uint8_t)                      packet_data;
 
 	uint8_t                              *extra_data;
@@ -75,6 +87,8 @@ struct obs_nvenc {
 extern void clear_data(struct obs_nvenc *obsnv);
 extern void obs_nvenc_helper_fill_frame(struct obs_nvenc *obsnv, struct encoder_frame *frame);
 extern void obs_nvenc_helper_save_bitstream(struct obs_nvenc *obsnv, struct encoder_packet *packet);
+extern const char* obs_nvenc_profile_string(OBS_NVENC_PROFILE profile);
+extern const char* obs_nvenc_preset_string(OBS_NVENC_PRESET preset);
 
 /* ------------------------------------------------------------------------- */
 //Create API Instance from library
