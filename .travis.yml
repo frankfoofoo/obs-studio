@@ -5,15 +5,38 @@ compiler:
  - clang
 
 before_script:
- - echo "yes" | sudo add-apt-repository ppa:kalakris/cmake
+ - git submodule update
+
+ - sudo apt-get install libx11-xcb-dev
+
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo apt-get update -qq
+ - sudo apt-get install qt5-default
+
+ - sudo add-apt-repository --yes ppa:kubuntu-ppa/backports
  - sudo apt-get update -qq
  - sudo apt-get install cmake
 
+ # - sudo add-apt-repository --yes ppa:samrog131/ppa
+ - sudo add-apt-repository --yes ppa:jon-severinsson/ffmpeg
+ - sudo apt-get update -qq
+ - sudo apt-get install libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev
+ - sudo apt-get install libx264-dev
+ - sudo apt-get install ffmpeg
+
+ - mkdir build
+ - cd build
+ - cmake ..
+
 script:
- - mkdir build && cd build && cmake .. && make 
+ - make 
 
 os:
  - linux
  - osx
- 
+
 osx_image: xcode61
+
+branches:
+ only:
+ - TravisCI
