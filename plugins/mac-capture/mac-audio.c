@@ -643,26 +643,44 @@ static const char *coreaudio_output_getname(void)
 	return TEXT_AUDIO_OUTPUT;
 }
 
+static void coreaudio_shutdown(struct coreaudio_data *ca)
+{
+	if (ca->reconnecting) {
+		os_event_signal(ca->exit_event);
+		pthread_join(ca->reconnect_thread, NULL);
+		os_event_reset(ca->exit_event);
+	}
+
+	coreaudio_uninit(ca);
+
+	if (ca->unit)
+		AudioComponentInstanceDispose(ca->unit);
+}
+
 static void coreaudio_destroy(void *data)
 {
 	struct coreaudio_data *ca = data;
 
 	if (ca) {
-		if (ca->reconnecting) {
-			os_event_signal(ca->exit_event);
-			pthread_join(ca->reconnect_thread, NULL);
-		}
-
-		coreaudio_uninit(ca);
-
-		if (ca->unit)
-			AudioComponentInstanceDispose(ca->unit);
+		coreaudio_shutdown(ca);
 
 		os_event_destroy(ca->exit_event);
 		bfree(ca->device_name);
 		bfree(ca->device_uid);
 		bfree(ca);
 	}
+}
+
+static void coreaudio_update(void *data, obs_data_t *settings)
+{
+	struct coreaudio_data *ca = data;
+
+	coreaudio_shutdown(ca);
+
+	bfree(ca->device_uid);
+	ca->device_uid = bstrdup(obs_data_get_string(settings, "device_id"));
+
+	coreaudio_try_init(ca);
 }
 
 static void coreaudio_defaults(obs_data_t *settings)
@@ -753,6 +771,7 @@ struct obs_source_info coreaudio_input_capture_info = {
 	.get_name       = coreaudio_input_getname,
 	.create         = coreaudio_create_input_capture,
 	.destroy        = coreaudio_destroy,
+	.update         = coreaudio_update,
 	.get_defaults   = coreaudio_defaults,
 	.get_properties = coreaudio_input_properties
 };
@@ -764,6 +783,7 @@ struct obs_source_info coreaudio_output_capture_info = {
 	.get_name       = coreaudio_output_getname,
 	.create         = coreaudio_create_output_capture,
 	.destroy        = coreaudio_destroy,
+	.update         = coreaudio_update,
 	.get_defaults   = coreaudio_defaults,
 	.get_properties = coreaudio_output_properties
 };
