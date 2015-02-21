@@ -5,3 +5,6 @@
 [submodule "plugins/mac-syphon/syphon-framework"]
 	path = plugins/mac-syphon/syphon-framework
 	url = https://github.com/palana/Syphon-Framework.git
+[submodule "plugins/obs-vce"]
+	path = plugins/obs-vce
+	url = https://github.com/audiohacked/obs-studio-plugin-vce.git
