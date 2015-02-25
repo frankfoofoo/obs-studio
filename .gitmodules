@@ -5,3 +5,6 @@
 [submodule "plugins/mac-syphon/syphon-framework"]
 	path = plugins/mac-syphon/syphon-framework
 	url = https://github.com/palana/Syphon-Framework.git
+[submodule "plugins/linux-openmax"]
+	path = plugins/linux-openmax
+	url = git@github.com:audiohacked/obs-studio-plugin-openmax.git
