@@ -31,6 +31,7 @@ class OBSBasic;
 class QAbstractButton;
 class QComboBox;
 class QCheckBox;
+class QLabel;
 class OBSPropertiesView;
 class OBSHotkeyWidget;
 
@@ -101,6 +102,8 @@ private:
 	OBSPropertiesView *streamProperties = nullptr;
 	OBSPropertiesView *streamEncoderProps = nullptr;
 	OBSPropertiesView *recordEncoderProps = nullptr;
+
+	QLabel *advOutRecWarning = nullptr;
 
 	using AudioSource_t =
 		std::tuple<OBSWeakSource,
@@ -256,6 +259,8 @@ private slots:
 	void ReloadHotkeys(obs_hotkey_id ignoreKey=OBS_INVALID_HOTKEY_ID);
 	void AdvancedChanged();
 	void AdvancedChangedRestart();
+
+	void AdvOutRecCheckWarnings();
 
 protected:
 	virtual void closeEvent(QCloseEvent *event);
