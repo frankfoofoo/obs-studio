@@ -2547,32 +2547,33 @@ void OBSBasicSettings::AdvancedChanged()
 
 void OBSBasicSettings::AdvOutRecCheckWarnings()
 {
+	auto Checked = [](QCheckBox *box)
+	{
+		return box->isChecked() ? 1 : 0;
+	};
+
 	QString msg;
 	uint32_t tracks =
-		(ui->advOutRecTrack1->isChecked() ? (1<<0) : 0) |
-		(ui->advOutRecTrack2->isChecked() ? (1<<1) : 0) |
-		(ui->advOutRecTrack3->isChecked() ? (1<<2) : 0) |
-		(ui->advOutRecTrack4->isChecked() ? (1<<3) : 0);
-	const char *styleSheet;
+		Checked(ui->advOutRecTrack1) +
+		Checked(ui->advOutRecTrack2) +
+		Checked(ui->advOutRecTrack3) +
+		Checked(ui->advOutRecTrack4);
+	const char *objectName = nullptr;
 
 	if (tracks == 0) {
 		msg = QTStr("OutputWarnings.NoTracksSelected");
-		styleSheet = "color: rgb(192, 0, 0); font-weight: bold;";
+		objectName = "advOutRecError";
 
-	} else if (tracks != (1<<0) &&
-	           tracks != (1<<1) &&
-	           tracks != (1<<2) &&
-	           tracks != (1<<3)) {
+	} else if (tracks > 1) {
 		msg = QTStr("OutputWarnings.MultiTrackRecording");
-		styleSheet = "color: rgb(192, 128, 0); font-weight: bold;";
+		objectName = "advOutRecWarning";
 	}
 
 	delete advOutRecWarning;
-	advOutRecWarning = nullptr;
 
 	if (!msg.isEmpty()) {
 		advOutRecWarning = new QLabel(msg, this);
-		advOutRecWarning->setStyleSheet(styleSheet);
+		advOutRecWarning->setObjectName(objectName);
 
 		QFormLayout *formLayout = reinterpret_cast<QFormLayout*>(
 				ui->advOutRecTopContainer->layout());

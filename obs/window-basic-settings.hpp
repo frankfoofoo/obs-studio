@@ -103,7 +103,7 @@ private:
 	OBSPropertiesView *streamEncoderProps = nullptr;
 	OBSPropertiesView *recordEncoderProps = nullptr;
 
-	QLabel *advOutRecWarning = nullptr;
+	QPointer<QLabel> advOutRecWarning;
 
 	using AudioSource_t =
 		std::tuple<OBSWeakSource,
