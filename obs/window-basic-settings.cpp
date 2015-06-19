@@ -2562,11 +2562,11 @@ void OBSBasicSettings::AdvOutRecCheckWarnings()
 
 	if (tracks == 0) {
 		msg = QTStr("OutputWarnings.NoTracksSelected");
-		objectName = "advOutRecError";
+		objectName = "errorLabel";
 
 	} else if (tracks > 1) {
 		msg = QTStr("OutputWarnings.MultiTrackRecording");
-		objectName = "advOutRecWarning";
+		objectName = "warningLabel";
 	}
 
 	delete advOutRecWarning;

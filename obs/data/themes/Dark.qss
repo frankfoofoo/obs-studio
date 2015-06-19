@@ -499,12 +499,12 @@ OBSHotkeyLabel[hotkeyPairHover=true] {
 
 /* Label warning/error */
 
-QLabel#advOutRecWarning {
+QLabel#warningLabel {
     color: rgb(192, 128, 0);
     font-weight: bold;
 }
 
-QLabel#advOutRecError {
+QLabel#errorLabel {
     color: rgb(192, 0, 0);
     font-weight: bold;
 }
