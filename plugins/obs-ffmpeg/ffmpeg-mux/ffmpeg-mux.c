@@ -560,7 +560,7 @@ static inline int64_t rescale_ts(struct ffmpeg_mux *ffm, int64_t val, int idx)
 {
 	AVStream *stream = get_stream(ffm, idx);
 
-	return av_rescale_q_rnd(val,
+	return av_rescale_q_rnd(val / stream->codec->time_base.num,
 			stream->codec->time_base, stream->time_base,
 			AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX);
 }
